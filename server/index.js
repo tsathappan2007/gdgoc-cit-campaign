@@ -106,6 +106,15 @@ app.get('/api/admin/export', (req, res) => {
   res.send(csv);
 });
 
+// 8. Admin Clear Leaderboard endpoint
+app.post('/api/admin/clear', (req, res) => {
+  store.clear();
+  res.json({
+    success: true,
+    message: 'Leaderboard cleared successfully',
+  });
+});
+
 // Serve frontend in production
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));

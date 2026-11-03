@@ -39,6 +39,11 @@ class Store {
     }
   }
 
+  clear() {
+    this.participants.clear();
+    this.saveToDisk();
+  }
+
   get(profileUrl) {
     return this.participants.get(profileUrl) || null;
   }

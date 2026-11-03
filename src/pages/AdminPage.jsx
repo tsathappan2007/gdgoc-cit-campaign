@@ -13,7 +13,8 @@ import {
   ExternalLink, 
   LogOut, 
   CheckCircle2, 
-  AlertCircle 
+  AlertCircle,
+  Trash2 
 } from 'lucide-react';
 import { GDGLogo, GoogleLogo } from '../components/Navbar';
 import { CAMPAIGN_CONFIG } from '../config/campaign';
@@ -91,6 +92,31 @@ export function AdminPage({ onNavigateHome }) {
 
   const handleDownloadCsv = () => {
     window.open('/api/admin/export', '_blank');
+  };
+
+  const handleClearLeaderboard = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to clear the entire leaderboard? All verified student records and chapter metrics will be reset.'
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch('/api/admin/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+        alert('Leaderboard has been successfully cleared!');
+      }
+    } catch (err) {
+      console.error('Failed to clear leaderboard:', err);
+      alert('Failed to clear leaderboard');
+    }
   };
 
   // Filter roster
@@ -271,6 +297,15 @@ export function AdminPage({ onNavigateHome }) {
             >
               <Download className="w-4 h-4" />
               <span>Export Roster (CSV)</span>
+            </button>
+
+            <button
+              onClick={handleClearLeaderboard}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs sm:text-sm font-bold shadow-2xs transition-colors cursor-pointer"
+              title="Clear all participant data and reset leaderboard"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>Clear Leaderboard</span>
             </button>
           </div>
         </div>

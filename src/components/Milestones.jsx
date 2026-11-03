@@ -1,14 +1,17 @@
-import React from 'react';
-import { CheckCircle2, Gift, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, Gift, ArrowRight, X, Sparkles } from 'lucide-react';
 import { CAMPAIGN_CONFIG } from '../config/campaign';
 
 export function Milestones({ completedCount = 0 }) {
   const isM1 = completedCount >= 5;
   const isM2 = completedCount >= 10;
+  const [previewReward, setPreviewReward] = useState(null);
 
-  const scrollToRewards = () => {
-    const el = document.getElementById('your-rewards-section');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  const openReward = (reward, milestoneLevel) => {
+    setPreviewReward({
+      ...reward,
+      level: milestoneLevel,
+    });
   };
 
   return (
@@ -87,22 +90,27 @@ export function Milestones({ completedCount = 0 }) {
               </p>
               <button 
                 type="button" 
-                onClick={scrollToRewards} 
-                className="inline-flex items-center text-xs font-bold text-emerald-700 hover:underline pt-1 cursor-pointer"
+                onClick={() => openReward(CAMPAIGN_CONFIG.milestones.m1, 1)} 
+                className="inline-flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline pt-1 cursor-pointer transition-colors"
               >
                 <span>View Reward</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </button>
             </div>
 
-            <div className="relative shrink-0 flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28">
-              <div className="absolute inset-1 sm:inset-2 bg-emerald-100 rounded-full" />
+            <button
+              type="button"
+              onClick={() => openReward(CAMPAIGN_CONFIG.milestones.m1, 1)}
+              className="relative shrink-0 flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 group cursor-pointer focus:outline-none"
+              title="Click to view reward image"
+            >
+              <div className="absolute inset-1 sm:inset-2 bg-emerald-100 rounded-full group-hover:scale-105 transition-transform" />
               <img 
                 src={CAMPAIGN_CONFIG.milestones.m1.image} 
                 alt={CAMPAIGN_CONFIG.milestones.m1.rewardName} 
-                className="relative z-10 w-14 h-18 sm:w-20 sm:h-24 object-contain drop-shadow-sm" 
+                className="relative z-10 w-14 h-18 sm:w-20 sm:h-24 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-300" 
               />
-            </div>
+            </button>
           </div>
         </div>
 
@@ -171,26 +179,107 @@ export function Milestones({ completedCount = 0 }) {
               </p>
               <button 
                 type="button" 
-                onClick={scrollToRewards} 
-                className="inline-flex items-center text-xs font-bold text-[#1a73e8] hover:underline pt-1 cursor-pointer"
+                onClick={() => openReward(CAMPAIGN_CONFIG.milestones.m2, 2)} 
+                className="inline-flex items-center text-xs font-bold text-[#1a73e8] hover:text-blue-700 hover:underline pt-1 cursor-pointer transition-colors"
               >
                 <span>View Reward</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </button>
             </div>
 
-            <div className="relative shrink-0 flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28">
-              <div className="absolute inset-1 sm:inset-1 bg-blue-100 rounded-full" />
+            <button
+              type="button"
+              onClick={() => openReward(CAMPAIGN_CONFIG.milestones.m2, 2)}
+              className="relative shrink-0 flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 group cursor-pointer focus:outline-none"
+              title="Click to view reward image"
+            >
+              <div className="absolute inset-1 sm:inset-1 bg-blue-100 rounded-full group-hover:scale-105 transition-transform" />
               <img 
                 src={CAMPAIGN_CONFIG.milestones.m2.image} 
                 alt={CAMPAIGN_CONFIG.milestones.m2.rewardName} 
-                className="relative z-10 w-16 h-16 sm:w-24 sm:h-24 object-cover drop-shadow-sm rounded-xl" 
+                className="relative z-10 w-16 h-16 sm:w-24 sm:h-24 object-cover drop-shadow-sm rounded-xl group-hover:scale-110 transition-transform duration-300" 
               />
-            </div>
+            </button>
           </div>
         </div>
 
       </div>
+
+      {/* Reward Image Modal / Lightbox */}
+      {previewReward && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setPreviewReward(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200/80 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-black tracking-wide ${
+                  previewReward.level === 1 
+                    ? 'bg-emerald-100 text-emerald-800' 
+                    : 'bg-blue-100 text-blue-800'
+                }`}>
+                  Milestone {previewReward.level} Reward
+                </span>
+                <span className="text-xs text-slate-400 font-medium">
+                  {previewReward.requiredCount} Badges Required
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewReward(null)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Image Showcase */}
+            <div className="p-4 sm:p-6 bg-slate-50 flex items-center justify-center">
+              <div className="relative w-full max-h-80 sm:max-h-96 flex items-center justify-center rounded-2xl bg-white p-4 shadow-xs border border-slate-200/60 overflow-hidden">
+                <img
+                  src={previewReward.image}
+                  alt={previewReward.rewardName}
+                  className="max-h-72 sm:max-h-88 w-auto object-contain rounded-xl drop-shadow-md"
+                />
+              </div>
+            </div>
+
+            {/* Modal Info Footer */}
+            <div className="p-5 sm:p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                    {previewReward.rewardName}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    {previewReward.level === 1 
+                      ? 'Official Google insulated steel bottle awarded upon reaching Milestone 1 (5 badges).' 
+                      : 'Exclusive Google Developer Groups T-Shirt & curated goodies box awarded upon completing Milestone 2 (all 10 badges).'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPreviewReward(null)}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+                >
+                  Awesome, got it!
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Search, Medal, User, Award, ExternalLink, RefreshCw } from 'lucide-react';
+import { Trophy, Search, User, RefreshCw } from 'lucide-react';
 import { CAMPAIGN_CONFIG } from '../config/campaign';
 
 export function Leaderboard({ onSelectProfile }) {
@@ -88,8 +88,7 @@ export function Leaderboard({ onSelectProfile }) {
                 <th className="py-3 px-3">Rank</th>
                 <th className="py-3 px-3">Participant</th>
                 <th className="py-3 px-3 text-center">Badges</th>
-                <th className="py-3 px-3 text-center">Milestones</th>
-                <th className="py-3 px-3 text-right">Action</th>
+                <th className="py-3 px-3 text-right">Milestones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs sm:text-sm font-medium">
@@ -158,7 +157,7 @@ export function Leaderboard({ onSelectProfile }) {
                     </td>
 
                     {/* Milestones */}
-                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                    <td className="py-3.5 px-3 text-right whitespace-nowrap">
                       {item.milestone2 ? (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
                           Champion 🏆
@@ -171,19 +170,6 @@ export function Leaderboard({ onSelectProfile }) {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
                           In Progress
                         </span>
-                      )}
-                    </td>
-
-                    {/* Action */}
-                    <td className="py-3.5 px-3 text-right whitespace-nowrap">
-                      {item.profileUrl && (
-                        <button
-                          onClick={() => onSelectProfile(item.profileUrl)}
-                          className="inline-flex items-center text-xs font-semibold text-[#1a73e8] hover:underline cursor-pointer"
-                        >
-                          <span>View</span>
-                          <ExternalLink className="w-3 h-3 ml-1" />
-                        </button>
                       )}
                     </td>
 

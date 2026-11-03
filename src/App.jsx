@@ -4,7 +4,6 @@ import { Navbar } from './components/Navbar';
 import { AnnouncementBanner } from './components/AnnouncementBanner';
 import { HeroTracker } from './components/HeroTracker';
 import { Milestones } from './components/Milestones';
-import { YourRewards } from './components/YourRewards';
 import { BadgesChecklist } from './components/BadgesChecklist';
 import { Leaderboard } from './components/Leaderboard';
 import { AboutModal } from './components/AboutModal';
@@ -178,9 +177,6 @@ export function App() {
             <Milestones
               completedCount={profileData ? profileData.completedCount : 0}
             />
-
-            {/* Goodies Showcase */}
-            <YourRewards />
 
             {/* 10 Skill Badges Interactive Checklist */}
             <BadgesChecklist
