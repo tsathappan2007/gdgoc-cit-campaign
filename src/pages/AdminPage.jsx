@@ -94,12 +94,12 @@ export function AdminPage({ onNavigateHome }) {
     window.open('/api/admin/export', '_blank');
   };
 
-  const handleClearLeaderboard = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to clear the entire leaderboard? All verified student records and chapter metrics will be reset.'
-    );
-    if (!confirmed) return;
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearMessage, setClearMessage] = useState(null);
 
+  const confirmClearLeaderboard = async () => {
+    setClearing(true);
     try {
       const res = await fetch('/api/admin/clear', {
         method: 'POST',
@@ -110,12 +110,16 @@ export function AdminPage({ onNavigateHome }) {
       });
       const data = await res.json();
       if (data.success) {
-        fetchData();
-        alert('Leaderboard has been successfully cleared!');
+        await fetchData();
+        setShowClearModal(false);
+        setClearMessage('Leaderboard has been successfully cleared! All entries and metrics have been reset to 0.');
+        setTimeout(() => setClearMessage(null), 5000);
       }
     } catch (err) {
       console.error('Failed to clear leaderboard:', err);
       alert('Failed to clear leaderboard');
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -300,15 +304,23 @@ export function AdminPage({ onNavigateHome }) {
             </button>
 
             <button
-              onClick={handleClearLeaderboard}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs sm:text-sm font-bold shadow-2xs transition-colors cursor-pointer"
+              onClick={() => setShowClearModal(true)}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer"
               title="Clear all participant data and reset leaderboard"
             >
-              <Trash2 className="w-4 h-4 text-rose-600" />
+              <Trash2 className="w-4 h-4" />
               <span>Clear Leaderboard</span>
             </button>
           </div>
         </div>
+
+        {/* Success Alert Banner */}
+        {clearMessage && (
+          <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-2xl flex items-center space-x-2 text-sm font-semibold shadow-xs">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{clearMessage}</span>
+          </div>
+        )}
 
         {/* 4 Analytics Tiles + Chapter Status */}
         {stats && (
@@ -508,7 +520,83 @@ export function AdminPage({ onNavigateHome }) {
 
         </div>
 
+        {/* Danger Zone: Clear Leaderboard Section */}
+        <div className="bg-red-50/70 border border-red-200 rounded-2xl sm:rounded-3xl p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2 text-red-700 font-extrabold text-sm sm:text-base">
+              <Trash2 className="w-5 h-5 text-red-600" />
+              <span>Danger Zone: Clear Campus Leaderboard</span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
+              Permanently wipe all participant entries and badge progress. This will return the leaderboard and chapter metrics back to 0. Use this whenever you want to reset and start fresh.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowClearModal(true)}
+            className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer shrink-0"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Clear Leaderboard</span>
+          </button>
+        </div>
+
       </main>
+
+      {/* Clear Confirmation Modal */}
+      {showClearModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs"
+          onClick={() => setShowClearModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                Clear Campus Leaderboard?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500">
+                Are you sure you want to clear the entire leaderboard? All verified student records, badge completions, and chapter metrics will be reset to 0.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowClearModal(false)}
+                disabled={clearing}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmClearLeaderboard}
+                disabled={clearing}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer flex items-center justify-center space-x-1.5"
+              >
+                {clearing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Clearing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Yes, Clear All</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
