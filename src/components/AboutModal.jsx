@@ -76,7 +76,7 @@ export function AboutModal({ onClose }) {
                 profile.
               </li>
               <li>Make sure profile visibility is set to <strong>Public</strong> in Settings.</li>
-              <li>Copy your public profile URL (starts with <code>cloudskillsboost.google/public_profiles/</code>).</li>
+              <li>Copy your public profile URL (starts with <code>https://www.skills.google/public_profiles/unique_id</code>).</li>
               <li>Paste it into the tracker above and click <strong>"Check Progress"</strong>.</li>
             </ol>
           </div>
