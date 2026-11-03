@@ -1,0 +1,329 @@
+[
+  {
+    "profileUrl": "https://www.cloudskillsboost.google/public_profiles/demo",
+    "userName": "CIT Cloud Achiever",
+    "avatarUrl": null,
+    "completedCount": 7,
+    "totalRequired": 10,
+    "percentage": 70,
+    "milestone1": {
+      "isCompleted": true,
+      "badgesRemaining": 0
+    },
+    "milestone2": {
+      "isCompleted": false,
+      "badgesRemaining": 3
+    },
+    "checklist": [
+      {
+        "id": 1,
+        "requiredTitle": "The Basics of Google Cloud Compute",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/754",
+        "credits": 4,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 2,
+        "requiredTitle": "Configure Service Accounts and IAM Roles for Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/702",
+        "credits": 4,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 3,
+        "requiredTitle": "Implement Speech and Language Solutions with Pre-trained APIs",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/700",
+        "credits": 4,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 4,
+        "requiredTitle": "Develop AI-Powered Prototypes in Google AI Studio",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1426",
+        "credits": 0,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 5,
+        "requiredTitle": "Analyze Images with the Cloud Vision API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/633",
+        "credits": 12,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 6,
+        "requiredTitle": "Build a Website on Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/638",
+        "credits": 13,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 7,
+        "requiredTitle": "Create Your First Gemini Enterprise Application",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1586/",
+        "credits": 0,
+        "isCompleted": true,
+        "earnedDate": "Oct 28, 2024"
+      },
+      {
+        "id": 8,
+        "requiredTitle": "Store, Process, and Manage Data on Google Cloud - Console",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/658",
+        "credits": 3,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 9,
+        "requiredTitle": "Using the Google Cloud Speech API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/756",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 10,
+        "requiredTitle": "Explore Generative AI in Agent Platform",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/959",
+        "credits": 16,
+        "isCompleted": false,
+        "earnedDate": null
+      }
+    ],
+    "lastChecked": "2026-11-03T09:18:33.900Z"
+  },
+  {
+    "profileUrl": "https://www.skills.google/public_profiles/1ae19e56-e3ba-49f1-b500-65a9e388dce1",
+    "userName": "Sathappan T",
+    "avatarUrl": null,
+    "completedCount": 0,
+    "totalRequired": 10,
+    "percentage": 0,
+    "milestone1": {
+      "isCompleted": false,
+      "badgesRemaining": 5
+    },
+    "milestone2": {
+      "isCompleted": false,
+      "badgesRemaining": 10
+    },
+    "checklist": [
+      {
+        "id": 1,
+        "requiredTitle": "The Basics of Google Cloud Compute",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/754",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 2,
+        "requiredTitle": "Configure Service Accounts and IAM Roles for Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/702",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 3,
+        "requiredTitle": "Implement Speech and Language Solutions with Pre-trained APIs",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/700",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 4,
+        "requiredTitle": "Develop AI-Powered Prototypes in Google AI Studio",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1426",
+        "credits": 0,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 5,
+        "requiredTitle": "Analyze Images with the Cloud Vision API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/633",
+        "credits": 12,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 6,
+        "requiredTitle": "Build a Website on Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/638",
+        "credits": 13,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 7,
+        "requiredTitle": "Create Your First Gemini Enterprise Application",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1586/",
+        "credits": 0,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 8,
+        "requiredTitle": "Store, Process, and Manage Data on Google Cloud - Console",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/658",
+        "credits": 3,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 9,
+        "requiredTitle": "Using the Google Cloud Speech API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/756",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 10,
+        "requiredTitle": "Explore Generative AI in Agent Platform",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/959",
+        "credits": 16,
+        "isCompleted": false,
+        "earnedDate": null
+      }
+    ],
+    "lastChecked": "2026-11-03T08:27:42.766Z"
+  },
+  {
+    "profileUrl": "https://www.skills.google/public_profiles/df73e3f4-c718-495c-bae9-e777a336390e",
+    "userName": "Sathappan T",
+    "avatarUrl": null,
+    "completedCount": 4,
+    "totalRequired": 10,
+    "percentage": 40,
+    "milestone1": {
+      "isCompleted": false,
+      "badgesRemaining": 1
+    },
+    "milestone2": {
+      "isCompleted": false,
+      "badgesRemaining": 6
+    },
+    "checklist": [
+      {
+        "id": 1,
+        "requiredTitle": "The Basics of Google Cloud Compute",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/754",
+        "credits": 4,
+        "isCompleted": true,
+        "earnedDate": "Earned Nov  6, 2025 EST"
+      },
+      {
+        "id": 2,
+        "requiredTitle": "Configure Service Accounts and IAM Roles for Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/702",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 3,
+        "requiredTitle": "Implement Speech and Language Solutions with Pre-trained APIs",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/700",
+        "credits": 4,
+        "isCompleted": true,
+        "earnedDate": "Earned Nov 18, 2025 EST"
+      },
+      {
+        "id": 4,
+        "requiredTitle": "Develop AI-Powered Prototypes in Google AI Studio",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1426",
+        "credits": 0,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 5,
+        "requiredTitle": "Analyze Images with the Cloud Vision API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/633",
+        "credits": 12,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 6,
+        "requiredTitle": "Build a Website on Google Cloud",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/638",
+        "credits": 13,
+        "isCompleted": true,
+        "earnedDate": "Earned Nov 18, 2025 EST"
+      },
+      {
+        "id": 7,
+        "requiredTitle": "Create Your First Gemini Enterprise Application",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/1586/",
+        "credits": 0,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 8,
+        "requiredTitle": "Store, Process, and Manage Data on Google Cloud - Console",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/658",
+        "credits": 3,
+        "isCompleted": true,
+        "earnedDate": "Earned Nov 18, 2025 EST"
+      },
+      {
+        "id": 9,
+        "requiredTitle": "Using the Google Cloud Speech API",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/756",
+        "credits": 4,
+        "isCompleted": false,
+        "earnedDate": null
+      },
+      {
+        "id": 10,
+        "requiredTitle": "Explore Generative AI in Agent Platform",
+        "category": "Skill Badge",
+        "courseUrl": "https://www.skills.google/course_templates/959",
+        "credits": 16,
+        "isCompleted": false,
+        "earnedDate": null
+      }
+    ],
+    "lastChecked": "2026-11-03T09:21:33.791Z"
+  }
+]
