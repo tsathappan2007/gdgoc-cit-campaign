@@ -115,7 +115,7 @@ app.post('/api/admin/clear', (req, res) => {
   });
 });
 
-// Serve frontend in production
+// Serve frontend in production (when run as unified server)
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
 app.get('*', (req, res) => {
@@ -124,6 +124,11 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`GDGoC CIT Campaign Server running on http://localhost:${PORT}`);
-});
+// Only listen when running standalone server (Render / Local), not in Vercel Serverless
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  app.listen(PORT, () => {
+    console.log(`GDGoC CIT Campaign Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

@@ -4,7 +4,9 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_FILE = path.join(__dirname, 'participants.json');
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+const DATA_FILE = isVercel ? '/tmp/participants.json' : path.join(__dirname, 'participants.json');
+const SEED_FILE = path.join(__dirname, 'participants.json');
 
 class Store {
   constructor() {
@@ -14,8 +16,12 @@ class Store {
 
   loadFromDisk() {
     try {
-      if (fs.existsSync(DATA_FILE)) {
-        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      let fileToRead = DATA_FILE;
+      if (!fs.existsSync(fileToRead) && fs.existsSync(SEED_FILE)) {
+        fileToRead = SEED_FILE;
+      }
+      if (fs.existsSync(fileToRead)) {
+        const raw = fs.readFileSync(fileToRead, 'utf-8');
         const list = JSON.parse(raw);
         if (Array.isArray(list)) {
           list.forEach(p => {
