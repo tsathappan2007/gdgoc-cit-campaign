@@ -7,7 +7,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
 const DATA_FILE = isVercel ? '/tmp/participants.json' : path.join(__dirname, 'participants.json');
-const SEED_FILE = path.join(__dirname, 'participants.json');
+let lastMongoErrorTime = 0;
+function logMongoError(context, err) {
+  const now = Date.now();
+  if (now - lastMongoErrorTime > 10000) {
+    console.error(`[MongoDB] ${context}: ${err.message}`);
+    lastMongoErrorTime = now;
+  }
+}
 
 class Store {
   constructor() {
@@ -120,7 +127,7 @@ class Store {
           return updated;
         }
       } catch (err) {
-        console.error('[MongoDB] Error in upsert, falling back to disk:', err.message);
+        logMongoError('Error in upsert, falling back to disk', err);
       }
     }
 
@@ -140,7 +147,7 @@ class Store {
           all = await db.collection('participants').find({}).toArray();
         }
       } catch (err) {
-        console.error('[MongoDB] Error fetching leaderboard, falling back to cache:', err.message);
+        logMongoError('Error fetching leaderboard, falling back to cache', err);
         all = Array.from(this.participants.values());
       }
     } else {
@@ -180,7 +187,7 @@ class Store {
           all = await db.collection('participants').find({}).toArray();
         }
       } catch (err) {
-        console.error('[MongoDB] Error fetching stats, falling back to cache:', err.message);
+        logMongoError('Error fetching stats, falling back to cache', err);
         all = Array.from(this.participants.values());
       }
     } else {
