@@ -1,12 +1,27 @@
-import express from 'express';
-import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getCurriculumBadges, scrapeProfile } from './scraper.js';
-import { store } from './store.js';
+import express from 'express';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load .env for local development (Node 20.6+ native loadEnvFile)
+try {
+  const rootEnv = path.resolve(process.cwd(), '.env');
+  const serverEnv = path.resolve(__dirname, '../.env');
+  if (fs.existsSync(rootEnv) && typeof process.loadEnvFile === 'function') {
+    process.loadEnvFile(rootEnv);
+  } else if (fs.existsSync(serverEnv) && typeof process.loadEnvFile === 'function') {
+    process.loadEnvFile(serverEnv);
+  }
+} catch {
+  // If parsing fails or in serverless environments without .env file, proceed
+}
+
+import { getCurriculumBadges, scrapeProfile } from './scraper.js';
+import { store } from './store.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,12 +49,12 @@ app.post('/api/check-profile', async (req, res) => {
 
     const data = await scrapeProfile(profileUrl);
 
-    // Save/update in store
-    store.upsert(data);
+    // Save/update in store (asynchronous with MongoDB support)
+    const updated = await store.upsert(data);
 
     res.json({
       success: true,
-      data,
+      data: updated,
     });
   } catch (err) {
     console.error('Error in /api/check-profile:', err.message);
@@ -50,22 +65,32 @@ app.post('/api/check-profile', async (req, res) => {
 });
 
 // 3. Leaderboard endpoint
-app.get('/api/leaderboard', (req, res) => {
-  const leaderboard = store.getLeaderboard();
-  res.json({
-    success: true,
-    leaderboard,
-    count: leaderboard.length,
-  });
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const leaderboard = await store.getLeaderboard();
+    res.json({
+      success: true,
+      leaderboard,
+      count: leaderboard.length,
+    });
+  } catch (err) {
+    console.error('Error in /api/leaderboard:', err.message);
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
 });
 
 // 4. Chapter stats endpoint
-app.get('/api/stats', (req, res) => {
-  const stats = store.getStats();
-  res.json({
-    success: true,
-    stats,
-  });
+app.get('/api/stats', async (req, res) => {
+  try {
+    const stats = await store.getStats();
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (err) {
+    console.error('Error in /api/stats:', err.message);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
 });
 
 // 5. Admin Login endpoint
@@ -89,30 +114,45 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // 6. Admin full roster data
-app.get('/api/admin/roster', (req, res) => {
-  const leaderboard = store.getLeaderboard();
-  res.json({
-    success: true,
-    roster: leaderboard,
-    count: leaderboard.length,
-  });
+app.get('/api/admin/roster', async (req, res) => {
+  try {
+    const leaderboard = await store.getLeaderboard();
+    res.json({
+      success: true,
+      roster: leaderboard,
+      count: leaderboard.length,
+    });
+  } catch (err) {
+    console.error('Error in /api/admin/roster:', err.message);
+    res.status(500).json({ error: 'Failed to fetch roster' });
+  }
 });
 
 // 7. Admin CSV export endpoint
-app.get('/api/admin/export', (req, res) => {
-  const csv = store.exportCsv();
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', 'attachment; filename="gdgoc_cit_campaign_roster.csv"');
-  res.send(csv);
+app.get('/api/admin/export', async (req, res) => {
+  try {
+    const csv = await store.exportCsv();
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="gdgoc_cit_campaign_roster.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error('Error in /api/admin/export:', err.message);
+    res.status(500).json({ error: 'Failed to export CSV' });
+  }
 });
 
 // 8. Admin Clear Leaderboard endpoint
-app.post('/api/admin/clear', (req, res) => {
-  store.clear();
-  res.json({
-    success: true,
-    message: 'Leaderboard cleared successfully',
-  });
+app.post('/api/admin/clear', async (req, res) => {
+  try {
+    await store.clear();
+    res.json({
+      success: true,
+      message: 'Leaderboard cleared successfully',
+    });
+  } catch (err) {
+    console.error('Error in /api/admin/clear:', err.message);
+    res.status(500).json({ error: 'Failed to clear leaderboard' });
+  }
 });
 
 // Serve frontend in production (when run as unified server)

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getDatabase, isMongoConfigured } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,7 @@ class Store {
   constructor() {
     this.participants = new Map();
     this.loadFromDisk();
+    this.hasSeededMongo = false;
   }
 
   loadFromDisk() {
@@ -45,33 +47,112 @@ class Store {
     }
   }
 
-  clear() {
-    this.participants.clear();
-    this.saveToDisk();
+  async ensureMongoSeeded() {
+    if (this.hasSeededMongo || !isMongoConfigured()) return;
+    try {
+      const db = await getDatabase();
+      if (db) {
+        const count = await db.collection('participants').countDocuments();
+        if (count === 0 && this.participants.size > 0) {
+          const list = Array.from(this.participants.values());
+          await db.collection('participants').insertMany(list);
+          console.log(`[MongoDB] Initialized database with ${list.length} seeded participants.`);
+        }
+        this.hasSeededMongo = true;
+      }
+    } catch (err) {
+      console.warn('[MongoDB] Auto-seeding check skipped/failed:', err.message);
+    }
   }
 
-  get(profileUrl) {
+  async clear() {
+    this.participants.clear();
+    this.saveToDisk();
+
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          await db.collection('participants').deleteMany({});
+        }
+      } catch (err) {
+        console.error('[MongoDB] Error clearing collection:', err.message);
+      }
+    }
+  }
+
+  async get(profileUrl) {
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          const doc = await db.collection('participants').findOne({ profileUrl });
+          if (doc) {
+            const { _id, ...cleanDoc } = doc;
+            return cleanDoc;
+          }
+        }
+      } catch (err) {
+        console.error('[MongoDB] Error fetching participant:', err.message);
+      }
+    }
     return this.participants.get(profileUrl) || null;
   }
 
-  upsert(participant) {
+  async upsert(participant) {
     const updated = {
       ...participant,
       lastChecked: new Date().toISOString(),
     };
+
+    // Update in-memory Map
     this.participants.set(participant.profileUrl, updated);
+
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          await db.collection('participants').updateOne(
+            { profileUrl: participant.profileUrl },
+            { $set: updated },
+            { upsert: true }
+          );
+          return updated;
+        }
+      } catch (err) {
+        console.error('[MongoDB] Error in upsert, falling back to disk:', err.message);
+      }
+    }
+
+    // Fallback to disk if MongoDB is not configured or fails
     this.saveToDisk();
     return updated;
   }
 
-  getLeaderboard() {
-    const all = Array.from(this.participants.values());
+  async getLeaderboard() {
+    await this.ensureMongoSeeded();
+
+    let all = [];
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          all = await db.collection('participants').find({}).toArray();
+        }
+      } catch (err) {
+        console.error('[MongoDB] Error fetching leaderboard, falling back to cache:', err.message);
+        all = Array.from(this.participants.values());
+      }
+    } else {
+      all = Array.from(this.participants.values());
+    }
+
     // Sort descending by completedCount, then by lastChecked timestamp
     all.sort((a, b) => {
       if (b.completedCount !== a.completedCount) {
-        return b.completedCount - a.completedCount;
+        return (b.completedCount || 0) - (a.completedCount || 0);
       }
-      return new Date(b.lastChecked) - new Date(a.lastChecked);
+      return new Date(b.lastChecked || 0) - new Date(a.lastChecked || 0);
     });
 
     return all.map((p, index) => ({
@@ -88,8 +169,24 @@ class Store {
     }));
   }
 
-  getStats() {
-    const all = Array.from(this.participants.values());
+  async getStats() {
+    await this.ensureMongoSeeded();
+
+    let all = [];
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          all = await db.collection('participants').find({}).toArray();
+        }
+      } catch (err) {
+        console.error('[MongoDB] Error fetching stats, falling back to cache:', err.message);
+        all = Array.from(this.participants.values());
+      }
+    } else {
+      all = Array.from(this.participants.values());
+    }
+
     const totalParticipants = all.length;
     const milestone1Achieved = all.filter(p => p.milestone1?.isCompleted).length;
     const milestone2Achieved = all.filter(p => p.milestone2?.isCompleted).length;
@@ -104,8 +201,8 @@ class Store {
     };
   }
 
-  exportCsv() {
-    const leaderboard = this.getLeaderboard();
+  async exportCsv() {
+    const leaderboard = await this.getLeaderboard();
     const headers = ['Rank', 'Name', 'Completed Badges', 'Total Badges', 'Percentage', 'Milestone 1', 'Milestone 2', 'Profile URL', 'Last Checked'];
     const rows = leaderboard.map(l => [
       l.rank,
