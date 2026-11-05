@@ -36,6 +36,7 @@ export function App() {
   const [profileData, setProfileData] = useState(null);
   const [defaultBadges, setDefaultBadges] = useState([]);
   const [stats, setStats] = useState(null);
+  const [leaderboardRefreshTrigger, setLeaderboardRefreshTrigger] = useState(0);
 
   // Modals state
   const [showAbout, setShowAbout] = useState(false);
@@ -117,7 +118,8 @@ export function App() {
         triggerConfetti(false, true);
       }
 
-      // Refresh stats
+      // Refresh stats and live leaderboard
+      setLeaderboardRefreshTrigger(prev => prev + 1);
       fetch('/api/stats')
         .then(r => r.json())
         .then(d => { if (d.stats) setStats(d.stats); });
@@ -197,6 +199,7 @@ export function App() {
 
             {/* Campus Leaderboard */}
             <Leaderboard
+              refreshTrigger={leaderboardRefreshTrigger}
               onSelectProfile={(url) => {
                 handleCheckProfile(url);
                 window.scrollTo({ top: 0, behavior: 'smooth' });

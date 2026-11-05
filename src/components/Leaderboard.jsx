@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Trophy, Search, User, RefreshCw, Crown, Sparkles, Flame, Zap, ShieldCheck } from 'lucide-react';
 import { CAMPAIGN_CONFIG } from '../config/campaign';
 
-export function Leaderboard({ onSelectProfile }) {
+export function Leaderboard({ onSelectProfile, refreshTrigger }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +24,7 @@ export function Leaderboard({ onSelectProfile }) {
 
   useEffect(() => {
     fetchLeaderboard();
-  }, []);
+  }, [refreshTrigger]);
 
   const filtered = leaderboard.filter(item => 
     item.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -104,7 +104,7 @@ export function Leaderboard({ onSelectProfile }) {
         <div className="space-y-6">
 
           {/* Top 3 Podium Showcase (if at least 1 participant) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 items-end pt-2">
+          <div className={`grid grid-cols-1 ${topThree.length === 1 ? 'sm:grid-cols-1 max-w-sm mx-auto' : topThree.length === 2 ? 'sm:grid-cols-2 max-w-xl mx-auto' : 'sm:grid-cols-3'} gap-3.5 sm:gap-4 items-end pt-2`}>
             
             {/* Rank 2 (Left) */}
             {topThree[1] && (

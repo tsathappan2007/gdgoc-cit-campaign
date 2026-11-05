@@ -59,6 +59,13 @@ class Store {
     try {
       const db = await getDatabase();
       if (db) {
+        // Enforce unique index on profileUrl for instant lookups and duplicate prevention
+        try {
+          await db.collection('participants').createIndex({ profileUrl: 1 }, { unique: true });
+        } catch (idxErr) {
+          // Index might already exist or duplicates being deduplicated
+        }
+
         const count = await db.collection('participants').countDocuments();
         if (count === 0 && this.participants.size > 0) {
           const list = Array.from(this.participants.values());
@@ -107,9 +114,13 @@ class Store {
   }
 
   async upsert(participant) {
+    const existing = await this.get(participant.profileUrl);
+    const now = new Date().toISOString();
+
     const updated = {
       ...participant,
-      lastChecked: new Date().toISOString(),
+      firstEnrolled: existing?.firstEnrolled || now,
+      lastChecked: now,
     };
 
     // Update in-memory Map
@@ -154,12 +165,14 @@ class Store {
       all = Array.from(this.participants.values());
     }
 
-    // Sort descending by completedCount, then by lastChecked timestamp
+    // Sort descending by completedCount, with fair tie-breaker: earlier achiever holds higher rank
     all.sort((a, b) => {
       if (b.completedCount !== a.completedCount) {
         return (b.completedCount || 0) - (a.completedCount || 0);
       }
-      return new Date(b.lastChecked || 0) - new Date(a.lastChecked || 0);
+      const timeA = new Date(a.firstEnrolled || a.lastChecked || 0).getTime();
+      const timeB = new Date(b.firstEnrolled || b.lastChecked || 0).getTime();
+      return timeA - timeB;
     });
 
     return all.map((p, index) => ({

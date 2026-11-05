@@ -31,10 +31,16 @@ export async function scrapeProfile(profileUrl) {
   }
 
   const cleanUrl = profileUrl.trim();
-  const profileUrlPattern = /^https?:\/\/(www\.)?(cloudskillsboost\.google|skills\.google)\/public_profiles\/[a-zA-Z0-9_-]+/i;
-  if (!profileUrlPattern.test(cleanUrl) && !cleanUrl.endsWith('/demo') && !cleanUrl.includes('demo-user')) {
+  const match = cleanUrl.match(/public_profiles\/([a-zA-Z0-9_-]+)/i);
+  if (!match && !cleanUrl.endsWith('/demo') && !cleanUrl.includes('demo-user')) {
     throw new Error('Invalid URL format. Please paste your complete Google Cloud Skills Boost public profile URL (e.g. https://www.skills.google/public_profiles/...)');
   }
+
+  // Canonicalize to prevent duplicate entries from skills.google vs cloudskillsboost.google or query parameters
+  const profileId = match ? match[1] : 'demo';
+  const canonicalUrl = (cleanUrl.endsWith('/demo') || cleanUrl.includes('demo-user'))
+    ? cleanUrl
+    : `https://www.skills.google/public_profiles/${profileId}`;
 
   // Support demo mode for testing without needing external web network
   if (cleanUrl.endsWith('/demo') || cleanUrl.includes('demo-user')) {
@@ -45,7 +51,7 @@ export async function scrapeProfile(profileUrl) {
   const timeoutId = setTimeout(() => controller.abort(), 9000); // 9-second timeout to avoid Vercel 10s cutoff
 
   try {
-    const response = await fetch(cleanUrl, {
+    const response = await fetch(canonicalUrl, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -79,6 +85,18 @@ export async function scrapeProfile(profileUrl) {
                     $('img.ql-avatar-image').attr('src') ||
                     $('img[alt*="avatar"]').attr('src') ||
                     null;
+
+    // Resolve relative avatar URLs to prevent 404 broken images
+    if (avatarUrl) {
+      avatarUrl = avatarUrl.trim();
+      if (avatarUrl.startsWith('//')) {
+        avatarUrl = `https:${avatarUrl}`;
+      } else if (avatarUrl.startsWith('/')) {
+        avatarUrl = `https://www.skills.google${avatarUrl}`;
+      } else if (!avatarUrl.startsWith('http')) {
+        avatarUrl = `https://www.skills.google/${avatarUrl}`;
+      }
+    }
 
     // Parse earned badges
     const earnedBadgesMap = new Map();
@@ -164,7 +182,7 @@ export async function scrapeProfile(profileUrl) {
     };
 
     return {
-      profileUrl: cleanUrl,
+      profileUrl: canonicalUrl,
       userName,
       avatarUrl,
       completedCount,
