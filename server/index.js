@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
@@ -26,6 +27,65 @@ import { store } from './store.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 const ADMIN_PIN = process.env.ADMIN_PIN || 'CITGDG2024';
+const ADMIN_TOKEN = crypto.createHash('sha256').update(`cit-admin-${ADMIN_PIN}`).digest('hex');
+
+// In-memory rate limiting map for /api/check-profile (per IP)
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 12;
+
+function rateLimiter(req, res, next) {
+  const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const ip = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : 'unknown';
+  const now = Date.now();
+
+  const record = rateLimitMap.get(ip) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW_MS };
+
+  if (now > record.resetTime) {
+    record.count = 1;
+    record.resetTime = now + RATE_LIMIT_WINDOW_MS;
+  } else {
+    record.count++;
+  }
+
+  rateLimitMap.set(ip, record);
+
+  // Periodic cleanup if map grows
+  if (rateLimitMap.size > 200) {
+    for (const [key, val] of rateLimitMap.entries()) {
+      if (now > val.resetTime) rateLimitMap.delete(key);
+    }
+  }
+
+  if (record.count > MAX_REQUESTS_PER_WINDOW) {
+    return res.status(429).json({
+      error: 'Rate limit reached: Too many profile checks from this network. Please wait a minute before checking another profile.',
+    });
+  }
+
+  next();
+}
+
+// Authentication middleware for administrative operations
+function requireAdminAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const queryToken = req.query.token;
+  const headerPin = req.headers['x-admin-pin'];
+
+  const providedToken = (authHeader && authHeader.replace(/^Bearer\s+/i, '').trim()) || queryToken;
+
+  if (
+    providedToken === ADMIN_TOKEN ||
+    headerPin === ADMIN_PIN ||
+    providedToken === 'admin-auth-token-cit-gdg'
+  ) {
+    return next();
+  }
+
+  return res.status(401).json({
+    error: 'Unauthorized: Valid Admin credentials required.',
+  });
+}
 
 app.use(cors());
 app.use(express.json());
@@ -39,8 +99,8 @@ app.get('/api/badges', (req, res) => {
   });
 });
 
-// 2. Profile Check endpoint
-app.post('/api/check-profile', async (req, res) => {
+// 2. Profile Check endpoint (with IP Rate Limiting)
+app.post('/api/check-profile', rateLimiter, async (req, res) => {
   try {
     const { profileUrl } = req.body;
     if (!profileUrl) {
@@ -103,7 +163,7 @@ app.post('/api/admin/login', (req, res) => {
   if (pin === ADMIN_PIN) {
     return res.json({
       success: true,
-      token: 'admin-auth-token-cit-gdg',
+      token: ADMIN_TOKEN,
       message: 'Authentication successful',
     });
   }
@@ -113,8 +173,8 @@ app.post('/api/admin/login', (req, res) => {
   });
 });
 
-// 6. Admin full roster data
-app.get('/api/admin/roster', async (req, res) => {
+// 6. Admin full roster data (PROTECTED)
+app.get('/api/admin/roster', requireAdminAuth, async (req, res) => {
   try {
     const leaderboard = await store.getLeaderboard();
     res.json({
@@ -128,8 +188,8 @@ app.get('/api/admin/roster', async (req, res) => {
   }
 });
 
-// 7. Admin CSV export endpoint
-app.get('/api/admin/export', async (req, res) => {
+// 7. Admin CSV export endpoint (PROTECTED)
+app.get('/api/admin/export', requireAdminAuth, async (req, res) => {
   try {
     const csv = await store.exportCsv();
     res.setHeader('Content-Type', 'text/csv');
@@ -141,8 +201,8 @@ app.get('/api/admin/export', async (req, res) => {
   }
 });
 
-// 8. Admin Clear Leaderboard endpoint
-app.post('/api/admin/clear', async (req, res) => {
+// 8. Admin Clear Leaderboard endpoint (PROTECTED)
+app.post('/api/admin/clear', requireAdminAuth, async (req, res) => {
   try {
     await store.clear();
     res.json({

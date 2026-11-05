@@ -25,7 +25,8 @@ export async function getDatabase() {
   // In development and production serverless, reuse clientPromise across invocations
   if (!global._mongoClientPromise) {
     const client = new MongoClient(uri, {
-      maxPoolSize: 10,
+      maxPoolSize: 3, // Keep pool conservative to stay well within MongoDB Atlas M0 free tier 500 connection limit
+      minPoolSize: 0,
       serverSelectionTimeoutMS: 5000,
     });
     

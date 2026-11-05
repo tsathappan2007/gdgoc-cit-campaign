@@ -31,8 +31,9 @@ export async function scrapeProfile(profileUrl) {
   }
 
   const cleanUrl = profileUrl.trim();
-  if (!cleanUrl.includes('cloudskillsboost.google/public_profiles/') && !cleanUrl.includes('skills.google/public_profiles/')) {
-    throw new Error('Invalid URL. URL must be from cloudskillsboost.google/public_profiles/<id>');
+  const profileUrlPattern = /^https?:\/\/(www\.)?(cloudskillsboost\.google|skills\.google)\/public_profiles\/[a-zA-Z0-9_-]+/i;
+  if (!profileUrlPattern.test(cleanUrl) && !cleanUrl.endsWith('/demo') && !cleanUrl.includes('demo-user')) {
+    throw new Error('Invalid URL format. Please paste your complete Google Cloud Skills Boost public profile URL (e.g. https://www.skills.google/public_profiles/...)');
   }
 
   // Support demo mode for testing without needing external web network
@@ -40,8 +41,12 @@ export async function scrapeProfile(profileUrl) {
     return createDemoProfile(cleanUrl);
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 9000); // 9-second timeout to avoid Vercel 10s cutoff
+
   try {
     const response = await fetch(cleanUrl, {
+      signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -117,9 +122,13 @@ export async function scrapeProfile(profileUrl) {
       let isCompleted = false;
       let earnedDate = null;
 
-      // Exact or partial fuzzy match
+      // Exact or safe partial match (prevents false matches from short generic badge names)
       for (const [earnedNorm, earnedData] of earnedBadgesMap.entries()) {
-        if (earnedNorm === requiredNorm || earnedNorm.includes(requiredNorm) || requiredNorm.includes(earnedNorm)) {
+        const isExactMatch = earnedNorm === requiredNorm;
+        const earnedContainsRequired = earnedNorm.includes(requiredNorm);
+        const requiredContainsEarned = earnedNorm.length >= 20 && requiredNorm.includes(earnedNorm);
+
+        if (isExactMatch || earnedContainsRequired || requiredContainsEarned) {
           isCompleted = true;
           earnedDate = earnedData.earnedDate;
           break;
@@ -166,8 +175,13 @@ export async function scrapeProfile(profileUrl) {
       checklist,
     };
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Google Cloud Skills Boost took too long to respond (>9s). Please verify your connection and try again.');
+    }
     console.error('Scraping error:', err.message);
     throw new Error(err.message || 'Unable to fetch public profile. Please verify that the profile is public.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

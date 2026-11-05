@@ -69,7 +69,11 @@ export function AdminPage({ onNavigateHome }) {
     try {
       const [statsRes, rosterRes] = await Promise.all([
         fetch('/api/stats'),
-        fetch('/api/admin/roster')
+        fetch('/api/admin/roster', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
       ]);
 
       const statsData = await statsRes.json();
@@ -91,7 +95,7 @@ export function AdminPage({ onNavigateHome }) {
   }, [token]);
 
   const handleDownloadCsv = () => {
-    window.open('/api/admin/export', '_blank');
+    window.open(`/api/admin/export?token=${encodeURIComponent(token || '')}`, '_blank');
   };
 
   const [showClearModal, setShowClearModal] = useState(false);
