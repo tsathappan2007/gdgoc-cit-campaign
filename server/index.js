@@ -215,6 +215,26 @@ app.post('/api/admin/clear', requireAdminAuth, async (req, res) => {
   }
 });
 
+// 9. Admin Delete Single Entry endpoint (PROTECTED)
+app.post('/api/admin/delete-entry', requireAdminAuth, async (req, res) => {
+  try {
+    const { profileUrl } = req.body;
+    if (!profileUrl) {
+      return res.status(400).json({ error: 'profileUrl is required in request body' });
+    }
+
+    await store.delete(profileUrl);
+
+    res.json({
+      success: true,
+      message: 'Participant entry deleted successfully',
+    });
+  } catch (err) {
+    console.error('Error in /api/admin/delete-entry:', err.message);
+    res.status(500).json({ error: 'Failed to delete participant entry' });
+  }
+});
+
 // Serve frontend in production (when run as unified server)
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));

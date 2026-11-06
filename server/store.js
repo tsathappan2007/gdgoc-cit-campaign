@@ -95,6 +95,26 @@ class Store {
     }
   }
 
+  async delete(profileUrl) {
+    if (!profileUrl) return false;
+
+    this.participants.delete(profileUrl);
+    this.saveToDisk();
+
+    if (isMongoConfigured()) {
+      try {
+        const db = await getDatabase();
+        if (db) {
+          await db.collection('participants').deleteOne({ profileUrl });
+        }
+      } catch (err) {
+        logMongoError('Error deleting participant from MongoDB', err);
+        return false;
+      }
+    }
+    return true;
+  }
+
   async get(profileUrl) {
     if (isMongoConfigured()) {
       try {

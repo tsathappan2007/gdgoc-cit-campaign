@@ -102,6 +102,38 @@ export function AdminPage({ onNavigateHome }) {
   const [clearing, setClearing] = useState(false);
   const [clearMessage, setClearMessage] = useState(null);
 
+  const [entryToDelete, setEntryToDelete] = useState(null);
+  const [deletingEntry, setDeletingEntry] = useState(false);
+
+  const handleDeleteEntry = async () => {
+    if (!entryToDelete) return;
+    setDeletingEntry(true);
+    try {
+      const res = await fetch('/api/admin/delete-entry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ profileUrl: entryToDelete.profileUrl })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete entry');
+      }
+      setRoster(prev => prev.filter(p => p.profileUrl !== entryToDelete.profileUrl));
+      setClearMessage(`Successfully deleted "${entryToDelete.userName}" from the leaderboard and database.`);
+      setTimeout(() => setClearMessage(null), 5000);
+      setEntryToDelete(null);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to delete entry:', err);
+      alert(err.message || 'Failed to delete entry');
+    } finally {
+      setDeletingEntry(false);
+    }
+  };
+
   const confirmClearLeaderboard = async () => {
     setClearing(true);
     try {
@@ -449,6 +481,7 @@ export function AdminPage({ onNavigateHome }) {
                     <th className="py-3 px-4 text-center">Milestone 2</th>
                     <th className="py-3 px-4">Profile URL</th>
                     <th className="py-3 px-4 text-right">Last Verified</th>
+                    <th className="py-3 px-4 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -514,6 +547,17 @@ export function AdminPage({ onNavigateHome }) {
 
                       <td className="py-3 px-4 text-right text-slate-400 text-xs whitespace-nowrap">
                         {item.lastChecked ? new Date(item.lastChecked).toLocaleDateString() : 'N/A'}
+                      </td>
+
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setEntryToDelete(item)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          title={`Delete ${item.userName} from leaderboard`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -594,6 +638,65 @@ export function AdminPage({ onNavigateHome }) {
                   <>
                     <Trash2 className="w-4 h-4" />
                     <span>Yes, Clear All</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Single Entry Confirmation Modal */}
+      {entryToDelete && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs"
+          onClick={() => setEntryToDelete(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                Delete Participant Entry?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600">
+                Are you sure you want to remove <span className="font-extrabold text-slate-900">{entryToDelete.userName}</span> from the campus leaderboard?
+              </p>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-left text-[11px] text-red-700 space-y-1 mt-2">
+                <p className="font-bold">⚠️ Irreversible Database Action:</p>
+                <p>This permanently removes this record ({entryToDelete.completedCount} badges) from the MongoDB Atlas database and leaderboard rankings.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setEntryToDelete(null)}
+                disabled={deletingEntry}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteEntry}
+                disabled={deletingEntry}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
+              >
+                {deletingEntry ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Yes, Delete</span>
                   </>
                 )}
               </button>
