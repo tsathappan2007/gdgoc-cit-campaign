@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, X, Flame, ArrowRight, Clock, Sparkles, AlertTriangle } from 'lucide-react';
+import { Gamepad2, X, Flame, ArrowRight, Clock, Sparkles } from 'lucide-react';
 
 export function CampaignDeadlineBanner() {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,17 +49,11 @@ export function CampaignDeadlineBanner() {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn"
       onClick={handleDismiss}
     >
-      {/* Centered Container Holding Both the Floating Warning Sign and Banner Card */}
+      {/* Centered Container Holding the Banner Card */}
       <div 
         className="relative max-w-lg w-full flex flex-col items-center animate-modal-zoom"
         onClick={(e) => e.stopPropagation()}
       >
-        
-        {/* Chill Floating Warning Sign at the Left Corner Behind the Banner (No Box, Enlarged) */}
-        <div className="absolute -top-12 -left-5 sm:-top-16 sm:-left-10 -z-10 pointer-events-none animate-chill-float">
-          <AlertTriangle className="w-24 h-24 sm:w-32 sm:h-32 text-amber-400 fill-amber-400/25 stroke-[2] drop-shadow-[0_10px_30px_rgba(251,188,5,0.55)]" />
-        </div>
-
         {/* The Main Modal Card (Zero Scrolling) */}
         <div className="relative w-full rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 sm:p-7 text-white border-2 border-amber-400/70 shadow-2xl shadow-amber-500/20 ring-4 ring-amber-400/15 overflow-hidden">
           
