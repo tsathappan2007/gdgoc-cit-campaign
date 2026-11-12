@@ -2,18 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Gamepad2, X, Flame, ArrowRight, Clock, Sparkles } from 'lucide-react';
 
 export function CampaignDeadlineBanner() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    // Show banner smoothly in the center with backdrop blur after a brief delay on page load
-    const isDismissed = sessionStorage.getItem('cit_deadline_banner_dismissed');
-    if (!isDismissed) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Immediately display as soon as page opens (unless already dismissed in current session)
+  const [isOpen, setIsOpen] = useState(() => {
+    return !sessionStorage.getItem('cit_deadline_banner_dismissed');
+  });
 
   // Prevent background scrolling while the modal is active
   useEffect(() => {
@@ -46,27 +38,34 @@ export function CampaignDeadlineBanner() {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-md animate-red-warning-flicker transition-all"
       onClick={handleDismiss}
     >
+      {/* Ambient Red Warning Light Flares in the Backdrop */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-red-600/35 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-red-600/35 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.8s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-2xl bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+      </div>
+
       {/* Centered Container Holding the Banner Card */}
       <div 
         className="relative max-w-lg w-full flex flex-col items-center animate-modal-zoom"
         onClick={(e) => e.stopPropagation()}
       >
         {/* The Main Modal Card (Zero Scrolling) */}
-        <div className="relative w-full rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 sm:p-7 text-white border-2 border-amber-400/70 shadow-2xl shadow-amber-500/20 ring-4 ring-amber-400/15 overflow-hidden">
+        <div className="relative w-full rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 sm:p-7 text-white border-2 border-amber-400/80 shadow-2xl shadow-red-500/20 ring-4 ring-red-500/20 overflow-hidden">
           
           {/* Subtle Cyber Glow Orbs */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-amber-500/25 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-blue-500/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-red-500/20 rounded-full blur-3xl pointer-events-none" />
 
           {/* Top Badges & Close Button */}
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black uppercase tracking-wider flex items-center space-x-1.5 shadow-sm">
-                <Flame className="w-3.5 h-3.5 text-red-600 animate-pulse fill-red-600" />
-                <span>Quest Closing</span>
+              <span className="px-3 py-1 rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-wider flex items-center space-x-1.5 shadow-md shadow-red-500/30">
+                <Flame className="w-3.5 h-3.5 text-amber-300 animate-pulse fill-amber-300" />
+                <span>Emergency Quest</span>
               </span>
               <span className="text-xs font-mono text-amber-300 font-bold px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center space-x-1">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
