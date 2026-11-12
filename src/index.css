@@ -145,6 +145,20 @@ body {
   animation: modalZoom 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Chill Floating Animation for Warning Sign Behind Banner */
+@keyframes chillFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(1deg);
+  }
+}
+
+.animate-chill-float {
+  animation: chillFloat 3.5s ease-in-out infinite;
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
