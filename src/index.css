@@ -112,3 +112,19 @@ body {
 .animate-radar {
   animation: radar-sweep 2s linear infinite;
 }
+
+/* Game HUD Slide Up Animation */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

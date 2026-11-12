@@ -17,7 +17,7 @@ export function BadgesChecklist({ checklist = [] }) {
   });
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 md:p-10 shadow-xs space-y-5">
+    <div id="badges-section" className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 md:p-10 shadow-xs space-y-5">
       
       {/* Header and Filter Controls */}
       <div className="flex flex-col gap-3 pb-5 border-b border-slate-100">

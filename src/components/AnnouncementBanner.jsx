@@ -7,6 +7,7 @@ export function AnnouncementBanner() {
 
   const message = CAMPAIGN_CONFIG.announcement.message;
   const tickerItems = [
+    "🚨 Final Quest: Campaign officially ends on 23rd November! Speedrun your remaining badges.",
     message,
     "Complete 5 Badges → Earn Google Water Bottle",
     "Complete 10 Badges → Earn T-Shirt + Goodies Box",

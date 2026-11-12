@@ -10,6 +10,7 @@ import { AboutModal } from './components/AboutModal';
 import { AchievementCard } from './components/AchievementCard';
 import { Footer } from './components/Footer';
 import { CustomCursor } from './components/CustomCursor';
+import { CampaignDeadlineBanner } from './components/CampaignDeadlineBanner';
 import { AdminPage } from './pages/AdminPage';
 
 export function App() {
@@ -210,6 +211,9 @@ export function App() {
 
           {/* Footer */}
           <Footer />
+
+          {/* Gamified Campaign Deadline Popup Banner */}
+          <CampaignDeadlineBanner />
 
         </div>
       )}
