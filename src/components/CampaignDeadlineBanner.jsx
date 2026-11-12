@@ -55,19 +55,9 @@ export function CampaignDeadlineBanner() {
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Chill Floating Warning Sign Behind the Banner */}
-        <div className="absolute -top-12 sm:-top-16 left-1/2 -translate-x-1/2 -z-10 pointer-events-none animate-chill-float flex flex-col items-center">
-          <div className="relative flex items-center justify-center">
-            {/* Ambient Warning Aura */}
-            <div className="absolute inset-0 bg-amber-500/35 rounded-full blur-2xl scale-150" />
-            
-            {/* Warning Shield Badge */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 p-0.5 shadow-2xl shadow-amber-500/50">
-              <div className="w-full h-full bg-slate-950/90 rounded-[22px] flex items-center justify-center backdrop-blur-md border border-amber-300/40">
-                <AlertTriangle className="w-11 h-11 sm:w-13 sm:h-13 text-amber-400 fill-amber-400/20 stroke-[2.2] drop-shadow-md" />
-              </div>
-            </div>
-          </div>
+        {/* Chill Floating Warning Sign at the Left Corner Behind the Banner (No Box, Enlarged) */}
+        <div className="absolute -top-12 -left-5 sm:-top-16 sm:-left-10 -z-10 pointer-events-none animate-chill-float">
+          <AlertTriangle className="w-24 h-24 sm:w-32 sm:h-32 text-amber-400 fill-amber-400/25 stroke-[2] drop-shadow-[0_10px_30px_rgba(251,188,5,0.55)]" />
         </div>
 
         {/* The Main Modal Card (Zero Scrolling) */}
