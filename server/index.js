@@ -235,6 +235,63 @@ app.post('/api/admin/delete-entry', requireAdminAuth, async (req, res) => {
   }
 });
 
+// 10. Admin Re-scrape Single User Profile endpoint (PROTECTED)
+app.post('/api/admin/sync-user', requireAdminAuth, async (req, res) => {
+  try {
+    const { profileUrl } = req.body;
+    if (!profileUrl) {
+      return res.status(400).json({ error: 'profileUrl is required' });
+    }
+
+    const scraped = await scrapeProfile(profileUrl);
+    const updated = await store.upsert(scraped);
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  } catch (err) {
+    console.error('Error in /api/admin/sync-user:', err.message);
+    res.status(400).json({
+      error: err.message || 'Failed to re-scrape participant profile',
+    });
+  }
+});
+
+// 11. Admin Batch Re-scrape All Participants endpoint (PROTECTED)
+app.post('/api/admin/sync-all', requireAdminAuth, async (req, res) => {
+  try {
+    const leaderboard = await store.getLeaderboard();
+    const urls = leaderboard.map(p => p.profileUrl).filter(Boolean);
+
+    const results = { updated: 0, failed: 0, errors: [] };
+
+    for (const url of urls) {
+      try {
+        const scraped = await scrapeProfile(url);
+        await store.upsert(scraped);
+        results.updated++;
+        // Small delay to be polite and avoid rate limits
+        await new Promise(r => setTimeout(r, 350));
+      } catch (err) {
+        results.failed++;
+        results.errors.push({ url, error: err.message });
+      }
+    }
+
+    const stats = await store.getStats();
+    res.json({
+      success: true,
+      message: `Sync complete: ${results.updated} updated, ${results.failed} failed`,
+      results,
+      stats,
+    });
+  } catch (err) {
+    console.error('Error in /api/admin/sync-all:', err.message);
+    res.status(500).json({ error: 'Failed to batch sync participants' });
+  }
+});
+
 // Serve frontend in production (when run as unified server)
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));

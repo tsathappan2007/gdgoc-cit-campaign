@@ -185,9 +185,9 @@ class Store {
       all = Array.from(this.participants.values());
     }
 
-    // Sort descending by completedCount, with fair tie-breaker: earlier achiever holds higher rank
+    // Sort descending by completedCount, with secondary tie-break by earliest timestamp for deterministic ordering
     all.sort((a, b) => {
-      if (b.completedCount !== a.completedCount) {
+      if ((b.completedCount || 0) !== (a.completedCount || 0)) {
         return (b.completedCount || 0) - (a.completedCount || 0);
       }
       const timeA = new Date(a.firstEnrolled || a.lastChecked || 0).getTime();
@@ -195,18 +195,33 @@ class Store {
       return timeA - timeB;
     });
 
-    return all.map((p, index) => ({
-      rank: index + 1,
-      userName: p.userName || 'Anonymous Learner',
-      avatarUrl: p.avatarUrl || null,
-      completedCount: p.completedCount || 0,
-      totalRequired: p.totalRequired || 10,
-      percentage: p.percentage || 0,
-      milestone1: p.milestone1?.isCompleted || false,
-      milestone2: p.milestone2?.isCompleted || false,
-      lastChecked: p.lastChecked,
-      profileUrl: p.profileUrl,
-    }));
+    // Dense / Tied Ranking:
+    // Learners with the same badge count share the exact same rank.
+    // e.g., All learners with 10 badges share Rank 1 (Grand Champions).
+    let currentRank = 0;
+    let lastBadges = null;
+
+    return all.map((p) => {
+      const count = p.completedCount || 0;
+      if (count !== lastBadges) {
+        currentRank += 1;
+        lastBadges = count;
+      }
+
+      return {
+        rank: currentRank,
+        isChampion: count >= (p.totalRequired || 10),
+        userName: p.userName || 'Anonymous Learner',
+        avatarUrl: p.avatarUrl || null,
+        completedCount: count,
+        totalRequired: p.totalRequired || 10,
+        percentage: p.percentage || 0,
+        milestone1: p.milestone1?.isCompleted || false,
+        milestone2: p.milestone2?.isCompleted || false,
+        lastChecked: p.lastChecked,
+        profileUrl: p.profileUrl,
+      };
+    });
   }
 
   async getStats() {

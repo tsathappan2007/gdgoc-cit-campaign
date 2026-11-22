@@ -105,6 +105,103 @@ export function AdminPage({ onNavigateHome }) {
   const [entryToDelete, setEntryToDelete] = useState(null);
   const [deletingEntry, setDeletingEntry] = useState(false);
 
+  // Profile scraping & sync state
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(null); // { current, total, currentName, updated, failed }
+  const [syncingSingleUrl, setSyncingSingleUrl] = useState(null);
+
+  const handleSyncSingle = async (profileUrl) => {
+    if (!profileUrl || isSyncingAll) return;
+    setSyncingSingleUrl(profileUrl);
+    try {
+      const res = await fetch('/api/admin/sync-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ profileUrl })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to sync user');
+
+      setClearMessage(`Successfully re-scraped & updated profile for "${data.data?.userName || 'learner'}".`);
+      setTimeout(() => setClearMessage(null), 5000);
+      await fetchData();
+    } catch (err) {
+      console.error('Error syncing single user:', err);
+      alert(err.message || 'Failed to sync profile');
+    } finally {
+      setSyncingSingleUrl(null);
+    }
+  };
+
+  const handleSyncAll = async () => {
+    if (roster.length === 0 || isSyncingAll) return;
+    setIsSyncingAll(true);
+    setSyncProgress({
+      current: 0,
+      total: roster.length,
+      currentName: 'Starting batch scrape...',
+      updated: 0,
+      failed: 0,
+    });
+
+    let updatedCount = 0;
+    let failedCount = 0;
+
+    for (let i = 0; i < roster.length; i++) {
+      const learner = roster[i];
+      setSyncProgress({
+        current: i + 1,
+        total: roster.length,
+        currentName: learner.userName || learner.profileUrl,
+        updated: updatedCount,
+        failed: failedCount,
+      });
+
+      try {
+        const res = await fetch('/api/admin/sync-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ profileUrl: learner.profileUrl })
+        });
+        if (res.ok) {
+          updatedCount++;
+        } else {
+          failedCount++;
+        }
+      } catch (err) {
+        console.error(`Error scraping ${learner.userName}:`, err);
+        failedCount++;
+      }
+
+      // Small 300ms pause to prevent rate limiting or throttling
+      if (i < roster.length - 1) {
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+
+    setSyncProgress({
+      current: roster.length,
+      total: roster.length,
+      currentName: 'Finished!',
+      updated: updatedCount,
+      failed: failedCount,
+    });
+
+    await fetchData();
+    setIsSyncingAll(false);
+    setClearMessage(`Batch scrape complete: ${updatedCount} profiles successfully scraped & updated (${failedCount} failed).`);
+    setTimeout(() => {
+      setSyncProgress(null);
+      setClearMessage(null);
+    }, 6000);
+  };
+
   const handleDeleteEntry = async () => {
     if (!entryToDelete) return;
     setDeletingEntry(true);
@@ -323,10 +420,20 @@ export function AdminPage({ onNavigateHome }) {
 
           <div className="flex items-center space-x-2.5">
             <button
+              onClick={handleSyncAll}
+              disabled={isSyncingAll || roster.length === 0}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer"
+              title="Scrape and update all participant public profiles from Google Cloud Skills Boost"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncingAll ? 'animate-spin' : ''}`} />
+              <span>{isSyncingAll ? 'Scraping Profiles...' : 'Fetch & Update All'}</span>
+            </button>
+
+            <button
               onClick={fetchData}
-              disabled={refreshing}
+              disabled={refreshing || isSyncingAll}
               className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-              title="Refresh Roster"
+              title="Refresh Roster Data"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
@@ -349,6 +456,34 @@ export function AdminPage({ onNavigateHome }) {
             </button>
           </div>
         </div>
+
+        {/* Sync Progress Live Indicator */}
+        {syncProgress && (
+          <div className="bg-blue-50/90 border border-blue-200 rounded-2xl p-4 shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+              <span className="flex items-center space-x-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-blue-600 shrink-0" />
+                <span>
+                  Scraping Profiles: {syncProgress.current} / {syncProgress.total} ({syncProgress.total > 0 ? Math.round((syncProgress.current / syncProgress.total) * 100) : 0}%)
+                </span>
+              </span>
+              <span className="text-[11px] font-semibold text-blue-700">
+                {syncProgress.updated} updated • {syncProgress.failed} failed
+              </span>
+            </div>
+
+            <div className="w-full bg-blue-200/80 rounded-full h-2 overflow-hidden">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${syncProgress.total > 0 ? Math.round((syncProgress.current / syncProgress.total) * 100) : 0}%` }}
+              />
+            </div>
+
+            <div className="text-[11px] text-blue-800/80 truncate font-mono">
+              Currently verifying: <span className="font-bold text-blue-950">{syncProgress.currentName}</span>
+            </div>
+          </div>
+        )}
 
         {/* Success Alert Banner */}
         {clearMessage && (
@@ -487,8 +622,27 @@ export function AdminPage({ onNavigateHome }) {
                 <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
                   {filteredRoster.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-400 whitespace-nowrap">
-                        {idx + 1}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        {item.rank === 1 ? (
+                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs">
+                            <span>🥇</span>
+                            <span>#1</span>
+                          </span>
+                        ) : item.rank === 2 ? (
+                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-slate-200 text-slate-800 font-bold text-xs">
+                            <span>🥈</span>
+                            <span>#2</span>
+                          </span>
+                        ) : item.rank === 3 ? (
+                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-amber-600 text-white font-bold text-xs">
+                            <span>🥉</span>
+                            <span>#3</span>
+                          </span>
+                        ) : (
+                          <span className="font-mono font-bold text-slate-400 px-1 text-xs">
+                            #{item.rank || idx + 1}
+                          </span>
+                        )}
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
@@ -552,8 +706,18 @@ export function AdminPage({ onNavigateHome }) {
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         <button
                           type="button"
+                          onClick={() => handleSyncSingle(item.profileUrl)}
+                          disabled={isSyncingAll || syncingSingleUrl === item.profileUrl}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer mr-1 disabled:opacity-40"
+                          title={`Re-scrape & update ${item.userName}'s public profile`}
+                        >
+                          <RefreshCw className={`w-4 h-4 ${syncingSingleUrl === item.profileUrl ? 'animate-spin text-blue-600' : ''}`} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setEntryToDelete(item)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          disabled={isSyncingAll}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-40"
                           title={`Delete ${item.userName} from leaderboard`}
                         >
                           <Trash2 className="w-4 h-4" />

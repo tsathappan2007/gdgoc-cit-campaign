@@ -31,8 +31,9 @@ export function Leaderboard({ onSelectProfile, refreshTrigger }) {
     (item.profileUrl && item.profileUrl.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const rank1Learners = filtered.filter(item => item.rank === 1);
+  const isMultipleRank1 = rank1Learners.length > 1;
   const topThree = filtered.slice(0, 3);
-  const remainingLearners = filtered.slice(3);
 
   return (
     <div id="leaderboard-section" className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 md:p-10 shadow-xs space-y-6">
@@ -103,105 +104,178 @@ export function Leaderboard({ onSelectProfile, refreshTrigger }) {
       ) : (
         <div className="space-y-6">
 
-          {/* Top 3 Podium Showcase (if at least 1 participant) */}
-          <div className={`grid grid-cols-1 ${topThree.length === 1 ? 'sm:grid-cols-1 max-w-sm mx-auto' : topThree.length === 2 ? 'sm:grid-cols-2 max-w-xl mx-auto' : 'sm:grid-cols-3'} gap-3.5 sm:gap-4 items-end pt-2`}>
-            
-            {/* Rank 2 (Left) */}
-            {topThree[1] && (
-              <div className="order-2 sm:order-1 bg-gradient-to-t from-slate-100 via-slate-50 to-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-col items-center text-center space-y-2 transform-gpu hover:-translate-y-1 transition-transform">
-                <div className="relative">
-                  {topThree[1].avatarUrl ? (
-                    <img
-                      src={topThree[1].avatarUrl}
-                      alt={topThree[1].userName}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-slate-300 shadow-md"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-slate-200 text-slate-700 flex items-center justify-center shadow-md font-bold">
-                      <User className="w-6 h-6" />
-                    </div>
-                  )}
-                  <span className="absolute -bottom-2 -right-1 text-lg">🥈</span>
+          {/* Top Showcase: Either Shared Champions Tier OR Standard Top-3 Podium */}
+          {isMultipleRank1 ? (
+            <div className="bg-gradient-to-b from-amber-500/10 via-amber-50/40 to-white rounded-3xl p-5 sm:p-7 border-2 border-amber-300 ring-4 ring-amber-400/10 shadow-lg space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-amber-200/70 pb-3.5">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shadow-xs text-base">
+                    👑
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                      <span>Grand Champions Tier</span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-black uppercase tracking-wider">
+                        Rank #1 (Tied)
+                      </span>
+                    </h3>
+                    <p className="text-xs text-amber-900/80 font-medium">
+                      All {rank1Learners.length} cloud champions completed the entire curriculum (10/10 Badges • 1000 XP) and share 1st Place!
+                    </p>
+                  </div>
                 </div>
-
-                <div className="min-w-0 w-full">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rank #2</span>
-                  <h4 className="font-black text-slate-900 text-sm truncate">{topThree[1].userName}</h4>
-                </div>
-
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-slate-200/70 text-slate-800 text-xs font-black">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{topThree[1].completedCount} Badges • {topThree[1].completedCount * 100} XP</span>
-                </div>
-              </div>
-            )}
-
-            {/* Rank 1 (Center - Elevated) */}
-            {topThree[0] && (
-              <div className="order-1 sm:order-2 bg-gradient-to-t from-amber-50 via-white to-amber-50/40 rounded-3xl p-6 border-2 border-amber-300 ring-2 ring-amber-400/30 shadow-lg flex flex-col items-center text-center space-y-2.5 transform-gpu hover:-translate-y-1 transition-transform relative">
-                <div className="absolute -top-3.5 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center space-x-1 shadow-xs">
-                  <Crown className="w-3 h-3 text-amber-200" />
-                  <span>Grand Champion</span>
-                </div>
-
-                <div className="relative mt-1">
-                  {topThree[0].avatarUrl ? (
-                    <img
-                      src={topThree[0].avatarUrl}
-                      alt={topThree[0].userName}
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md ring-2 ring-amber-300/40"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-500 text-white flex items-center justify-center shadow-md font-bold">
-                      <User className="w-7 h-7" />
-                    </div>
-                  )}
-                  <span className="absolute -bottom-2 -right-1 text-2xl">🥇</span>
-                </div>
-
-                <div className="min-w-0 w-full">
-                  <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider block">Rank #1 Leader</span>
-                  <h4 className="font-black text-slate-900 text-base truncate">{topThree[0].userName}</h4>
-                </div>
-
-                <div className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-xl bg-amber-400/30 text-amber-900 text-xs font-black shadow-2xs">
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-amber-100 text-amber-900 text-xs font-black self-start sm:self-auto">
                   <Flame className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-                  <span>{topThree[0].completedCount} Badges • {topThree[0].completedCount * 100} XP</span>
+                  <span>1000 XP Champions</span>
                 </div>
               </div>
-            )}
 
-            {/* Rank 3 (Right) */}
-            {topThree[2] && (
-              <div className="order-3 bg-gradient-to-t from-amber-950/5 via-slate-50 to-white rounded-3xl p-5 border border-amber-200/80 shadow-xs flex flex-col items-center text-center space-y-2 transform-gpu hover:-translate-y-1 transition-transform">
-                <div className="relative">
-                  {topThree[2].avatarUrl ? (
-                    <img
-                      src={topThree[2].avatarUrl}
-                      alt={topThree[2].userName}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-700/40 shadow-md"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center shadow-md font-bold">
-                      <User className="w-6 h-6" />
+              {/* Champions Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                {rank1Learners.map((champ, cIdx) => (
+                  <div 
+                    key={cIdx} 
+                    className="bg-white rounded-2xl p-4 border border-amber-200 shadow-2xs hover:shadow-md hover:-translate-y-1 transition-all flex items-center space-x-3.5 relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-amber-200/60 to-transparent rounded-bl-2xl -mr-2 -mt-2 pointer-events-none" />
+                    
+                    <div className="relative shrink-0">
+                      {champ.avatarUrl ? (
+                        <img
+                          src={champ.avatarUrl}
+                          alt={champ.userName}
+                          className="w-12 h-12 rounded-xl object-cover border-2 border-amber-400 shadow-xs"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://www.gstatic.com/devrel-devsite/prod/v52a23e9cb3de7a61d6fb1e6a17b6a6bbfe3e04e84cbef70139b854378f85f54d/cloud/images/favicons/onecloud/super_g.png";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-500 text-white flex items-center justify-center shadow-xs font-bold">
+                          <User className="w-6 h-6" />
+                        </div>
+                      )}
+                      <span className="absolute -bottom-1 -right-1 text-sm">🥇</span>
                     </div>
-                  )}
-                  <span className="absolute -bottom-2 -right-1 text-lg">🥉</span>
-                </div>
 
-                <div className="min-w-0 w-full">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rank #3</span>
-                  <h4 className="font-black text-slate-900 text-sm truncate">{topThree[2].userName}</h4>
-                </div>
-
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-amber-100 text-amber-900 text-xs font-black">
-                  <Zap className="w-3.5 h-3.5 text-amber-600" />
-                  <span>{topThree[2].completedCount} Badges • {topThree[2].completedCount * 100} XP</span>
-                </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-1.5 mb-0.5">
+                        <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100">
+                          #1 Champion
+                        </span>
+                      </div>
+                      <h4 className="font-black text-slate-900 text-xs sm:text-sm truncate">
+                        {champ.userName}
+                      </h4>
+                      <p className="text-[11px] font-bold text-amber-800 flex items-center space-x-1 mt-0.5">
+                        <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                        <span>10 Badges • 1000 XP</span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          ) : (
+            /* Traditional Top-3 Podium (when there is a single leader or no 10-badge tie) */
+            <div className={`grid grid-cols-1 ${topThree.length === 1 ? 'sm:grid-cols-1 max-w-sm mx-auto' : topThree.length === 2 ? 'sm:grid-cols-2 max-w-xl mx-auto' : 'sm:grid-cols-3'} gap-3.5 sm:gap-4 items-end pt-2`}>
+              
+              {/* Rank 2 (Left) */}
+              {topThree[1] && (
+                <div className="order-2 sm:order-1 bg-gradient-to-t from-slate-100 via-slate-50 to-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-col items-center text-center space-y-2 transform-gpu hover:-translate-y-1 transition-transform">
+                  <div className="relative">
+                    {topThree[1].avatarUrl ? (
+                      <img
+                        src={topThree[1].avatarUrl}
+                        alt={topThree[1].userName}
+                        className="w-14 h-14 rounded-2xl object-cover border-2 border-slate-300 shadow-md"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-2xl bg-slate-200 text-slate-700 flex items-center justify-center shadow-md font-bold">
+                        <User className="w-6 h-6" />
+                      </div>
+                    )}
+                    <span className="absolute -bottom-2 -right-1 text-lg">🥈</span>
+                  </div>
 
-          </div>
+                  <div className="min-w-0 w-full">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rank #2</span>
+                    <h4 className="font-black text-slate-900 text-sm truncate">{topThree[1].userName}</h4>
+                  </div>
+
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-slate-200/70 text-slate-800 text-xs font-black">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>{topThree[1].completedCount} Badges • {topThree[1].completedCount * 100} XP</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Rank 1 (Center - Elevated) */}
+              {topThree[0] && (
+                <div className="order-1 sm:order-2 bg-gradient-to-t from-amber-50 via-white to-amber-50/40 rounded-3xl p-6 border-2 border-amber-300 ring-2 ring-amber-400/30 shadow-lg flex flex-col items-center text-center space-y-2.5 transform-gpu hover:-translate-y-1 transition-transform relative">
+                  <div className="absolute -top-3.5 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center space-x-1 shadow-xs">
+                    <Crown className="w-3 h-3 text-amber-200" />
+                    <span>Grand Champion</span>
+                  </div>
+
+                  <div className="relative mt-1">
+                    {topThree[0].avatarUrl ? (
+                      <img
+                        src={topThree[0].avatarUrl}
+                        alt={topThree[0].userName}
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md ring-2 ring-amber-300/40"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-500 text-white flex items-center justify-center shadow-md font-bold">
+                        <User className="w-7 h-7" />
+                      </div>
+                    )}
+                    <span className="absolute -bottom-2 -right-1 text-2xl">🥇</span>
+                  </div>
+
+                  <div className="min-w-0 w-full">
+                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider block">Rank #1 Leader</span>
+                    <h4 className="font-black text-slate-900 text-base truncate">{topThree[0].userName}</h4>
+                  </div>
+
+                  <div className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-xl bg-amber-400/30 text-amber-900 text-xs font-black shadow-2xs">
+                    <Flame className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+                    <span>{topThree[0].completedCount} Badges • {topThree[0].completedCount * 100} XP</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Rank 3 (Right) */}
+              {topThree[2] && (
+                <div className="order-3 bg-gradient-to-t from-amber-950/5 via-slate-50 to-white rounded-3xl p-5 border border-amber-200/80 shadow-xs flex flex-col items-center text-center space-y-2 transform-gpu hover:-translate-y-1 transition-transform">
+                  <div className="relative">
+                    {topThree[2].avatarUrl ? (
+                      <img
+                        src={topThree[2].avatarUrl}
+                        alt={topThree[2].userName}
+                        className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-700/40 shadow-md"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center shadow-md font-bold">
+                        <User className="w-6 h-6" />
+                      </div>
+                    )}
+                    <span className="absolute -bottom-2 -right-1 text-lg">🥉</span>
+                  </div>
+
+                  <div className="min-w-0 w-full">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rank #3</span>
+                    <h4 className="font-black text-slate-900 text-sm truncate">{topThree[2].userName}</h4>
+                  </div>
+
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-amber-100 text-amber-900 text-xs font-black">
+                    <Zap className="w-3.5 h-3.5 text-amber-600" />
+                    <span>{topThree[2].completedCount} Badges • {topThree[2].completedCount * 100} XP</span>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
 
           {/* Full Ranked Table */}
           <div className="overflow-x-auto rounded-2xl border border-slate-100">
@@ -226,19 +300,22 @@ export function Leaderboard({ onSelectProfile, refreshTrigger }) {
                       {/* Rank */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {isTop1 ? (
-                          <span className="w-7 h-7 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-xs shadow-xs">
-                            🥇
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-xs">
+                            <span>🥇</span>
+                            <span>#1</span>
                           </span>
                         ) : isTop2 ? (
-                          <span className="w-7 h-7 rounded-xl bg-slate-200 text-slate-800 font-bold flex items-center justify-center text-xs shadow-xs">
-                            🥈
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-slate-200 text-slate-800 font-bold text-xs shadow-xs">
+                            <span>🥈</span>
+                            <span>#2</span>
                           </span>
                         ) : isTop3 ? (
-                          <span className="w-7 h-7 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                            🥉
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-amber-600 text-white font-bold text-xs shadow-xs">
+                            <span>🥉</span>
+                            <span>#3</span>
                           </span>
                         ) : (
-                          <span className="font-mono font-black text-slate-400 px-1 text-xs">
+                          <span className="font-mono font-black text-slate-400 px-2 text-xs">
                             #{item.rank}
                           </span>
                         )}
